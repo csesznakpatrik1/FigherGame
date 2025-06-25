@@ -9,6 +9,7 @@ namespace FighterGame
 {
    public enum Attacks
     {
+        WaitRound,
         Basic,
         Crit,
         Heal,
@@ -16,7 +17,7 @@ namespace FighterGame
 
     }
 
-    abstract class  Player
+   public abstract class  Player
     {
         
         private int hp;
@@ -24,6 +25,8 @@ namespace FighterGame
         private int stamina;
         private readonly int maxStamina;
         private readonly int maxHp;
+        public abstract Dictionary<Attacks, int> attackStaminaCost();
+        public const double  baseAttackCost = 0.1;
         public abstract List<Attacks> GetAvailableMoves();
 
         //get set
@@ -84,23 +87,26 @@ namespace FighterGame
         }
         public void DoDamage(Player player)
         {
-            if (Stamina > maxStamina * 0.1)
-            {
+           
             player.TakeDamage(Damage);
-            Stamina -= (int)(Stamina * 0.1);
+            Stamina -= (int)(MaxStamina * baseAttackCost);
 
-            }
+            
         }
 
 
     }
 
-    class Tank : Player
+    public class Tank : Player
     {
         private readonly double healPercent = 0.1;
-        public Tank() : base(maxHp: 300,damage: 20,maxStamina: 120) { }
+
+        public Tank() : base(maxHp: 300, damage: 20, maxStamina: 120) {
+
+        }
         public void Heal()
         {
+           
             Random rand = new Random();
             int randomHeal = rand.Next(0, 2);
 
@@ -118,20 +124,36 @@ namespace FighterGame
 
         }
 
+        public override Dictionary<Attacks, int> attackStaminaCost()
+        {
+            Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
+            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Heal, (int)(MaxStamina * 0.2));
+            return AttackStaminaCost;
+        }
         public override List<Attacks> GetAvailableMoves()
         {
-            return new List<Attacks> {Attacks.Basic, Attacks.Heal };
+            return new List<Attacks> {Attacks.WaitRound,Attacks.Basic, Attacks.Heal };
         }
 
 
     }
 
-    class GlassCannon : Player
+   public class GlassCannon : Player
     {
         private readonly int critMultiplier = 2;
+        public override Dictionary<Attacks, int> attackStaminaCost()
+        {
+            Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
+            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Crit, (int)(MaxStamina * 0.17));
+            return AttackStaminaCost;
+        }
         public override List<Attacks> GetAvailableMoves()
         {
-            return new List<Attacks> { Attacks.Basic, Attacks.Crit };
+            return new List<Attacks> {Attacks.WaitRound ,Attacks.Basic, Attacks.Crit };
         }
         public void CritAttack(Player player)
         {
@@ -153,18 +175,30 @@ namespace FighterGame
         }
 
  
-        public GlassCannon() :base (maxHp: 50,damage: 120,maxStamina: 60) { }
+        public GlassCannon() :base (maxHp: 50,damage: 120,maxStamina: 60) {
+
+        
+        }
 
 
     }
 
 
-    class Scout : Player
+  public class Scout : Player
     {
         private readonly int multipleAttack = 2;
+
+        public override Dictionary<Attacks, int> attackStaminaCost()
+        {
+            Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
+            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
+            AttackStaminaCost.Add(Attacks.Double, (int)(MaxStamina * baseAttackCost) * 2 );
+            return AttackStaminaCost;
+        }
         public override List<Attacks> GetAvailableMoves()
         {
-            return new List<Attacks> { Attacks.Basic, Attacks.Double };
+            return new List<Attacks> {Attacks.WaitRound ,Attacks.Basic, Attacks.Double };
         }
         public void DoubleAttack(Player player)
         {
@@ -192,7 +226,9 @@ namespace FighterGame
 
 
 
-        public Scout()  :base(maxHp: 70,damage: 30,maxStamina: 200) { }
+        public Scout()  :base(maxHp: 70,damage: 30,maxStamina: 200) {
+
+        }
  
 
     }

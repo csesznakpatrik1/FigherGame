@@ -18,7 +18,7 @@ namespace FighterGame
               Player player2 = SelectPlayer();
 
               Console.Clear();
-            /*
+            
               // game
               while (player1.HP > 0 && player2.HP > 0)
               {
@@ -40,38 +40,80 @@ namespace FighterGame
                       HandlePlayerMove(player2, player1);
                   }
 
-                  //wait for a bit after the round
-                  System.Threading.Thread.Sleep(3000);
-                  Console.Clear();
+                //wait for a bit after the round
+                Console.WriteLine("Nyomj bármilyen gombot a folytatáshoz...");
+                Console.ReadKey();
+                Console.Clear();
+                  
+              } 
 
-              } */
-
-            HandlePlayerMove(player1,player2);
         }
 
 
         static void HandlePlayerMove(Player current, Player target)
         {
+            List<Attacks> currentMoves;
+            Dictionary<Attacks, int> currentAttackStaminaCost;
+            int input;
+            (input,currentMoves, currentAttackStaminaCost ) = GetInput(current);
+
+            switch(currentMoves[input - 1])
+            {
+                case Attacks.Basic: current.DoDamage(target); break;
+                case Attacks.Crit: 
+                    if (current is GlassCannon gc)
+                    {   
+                        
+                        gc.CritAttack(target);
+                    }
+                    break;
+                case Attacks.Heal: 
+                    if (current is Tank tank)
+                    {
+                        tank.Heal();
+                    }
+                    break;
+                case Attacks.Double: 
+                    if (current is Scout scout)
+                    {
+                        scout.DoubleAttack(target);
+                    }
+                    break;
+                default: break;
+
+            }
+
+        }
+
+        static (int, List<Attacks>, Dictionary<Attacks, int>) GetInput(Player current)
+        {
             Console.WriteLine("Válaszd ki mit szeretnél csinálni: ");
 
-            //getavailablemoves call, majd ezzel torteno move vegrehajtasa!!!!
             List<Attacks> currentMoves = current.GetAvailableMoves();
+            Dictionary<Attacks, int> currentAttackStaminaCost = current.attackStaminaCost();
             int input;
             do
             {
                 for (int i = 0; i < currentMoves.Count; i++)
                 {
-                    Console.WriteLine($"({i + 1}): {currentMoves[i]}");
+                    if (currentMoves[i] != Attacks.WaitRound)
+                    {
 
+                        Console.WriteLine($"({i + 1}): {currentMoves[i]} attack, Stamina Cost: {currentAttackStaminaCost[currentMoves[i]]}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"({i + 1}): {currentMoves[i]} Stamina Regenerate: {currentAttackStaminaCost[currentMoves[i]]}");
+
+                    }
                 }
-                int.TryParse(Console.ReadLine(), out input);
+                bool x = int.TryParse(Console.ReadLine(), out input);
+                if (!x) Console.WriteLine("számot kérek");
 
-            } while (input < 1 || input > 3);
+            } while (input < 1 || input > currentMoves.Count());
 
-
+            return (input,currentMoves, currentAttackStaminaCost);
         }
-
-
         static void ShowStats(Player player1, Player player2)
         {
             Console.WriteLine($"1-es Játékos statisztikái: \n \n Neve:{player1.GetType().Name} \n HP:{player1.HP} \n Damage:{player1.Damage} \n Stamina:{player1.Stamina} \n");
@@ -96,12 +138,14 @@ namespace FighterGame
 
             if (player1GuessNumber < player2GuessNumber)
             {
-                Console.WriteLine("Az első játékos nyert!");
+                Console.WriteLine("Az első játékos nyert! \n");
+                System.Threading.Thread.Sleep(500);
                 return 0;
             }
             else
             {
-                Console.WriteLine("A második játékos nyert!");
+                Console.WriteLine("A második játékos nyert! \n");
+                System.Threading.Thread.Sleep(500);
                 return 1;
             }
 
