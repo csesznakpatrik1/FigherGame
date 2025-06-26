@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,7 +27,7 @@ namespace FighterGame
                   //shows the stats at the beginning of every round
                   ShowStats(player1, player2);
                   // gets the round winner in the guessing game, the round winner can attack
-                  int winner = NextPlayer();
+                  int winner = NextPlayer(player1, player2);
 
 
                   //attack mechanism
@@ -52,14 +53,21 @@ namespace FighterGame
 
         static void HandlePlayerMove(Player current, Player target)
         {
+            // get the inputs
             List<Attacks> currentMoves;
             Dictionary<Attacks, int> currentAttackStaminaCost;
             int input;
+
             (input,currentMoves, currentAttackStaminaCost ) = GetInput(current);
 
+            //Handle the player moves
             switch(currentMoves[input - 1])
             {
+                //default moves
+                case Attacks.WaitRound: current.SkipRound(currentAttackStaminaCost[Attacks.WaitRound]); break;
                 case Attacks.Basic: current.DoDamage(target); break;
+
+                // Class specific moves
                 case Attacks.Crit: 
                     if (current is GlassCannon gc)
                     {   
@@ -87,43 +95,64 @@ namespace FighterGame
 
         static (int, List<Attacks>, Dictionary<Attacks, int>) GetInput(Player current)
         {
-            Console.WriteLine("Válaszd ki mit szeretnél csinálni: ");
-
+            Console.WriteLine("Válaszd ki mit szeretnél csinálni:\n");
+            // get the inputs from the winner player
             List<Attacks> currentMoves = current.GetAvailableMoves();
             Dictionary<Attacks, int> currentAttackStaminaCost = current.attackStaminaCost();
             int input;
+
+            Attacks chosenAttack;
+            // do-while handler
+            bool isValid = false;
+
             do
             {
-                for (int i = 0; i < currentMoves.Count; i++)
+                //write out the current player's moves
+                for (int i = 0; i < currentMoves.Count(); i++)
                 {
-                    if (currentMoves[i] != Attacks.WaitRound)
-                    {
-
-                        Console.WriteLine($"({i + 1}): {currentMoves[i]} attack, Stamina Cost: {currentAttackStaminaCost[currentMoves[i]]}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"({i + 1}): {currentMoves[i]} Stamina Regenerate: {currentAttackStaminaCost[currentMoves[i]]}");
-
-                    }
+                    Console.WriteLine($"{currentMoves[i]} Attack | Stamina Cost: {currentAttackStaminaCost[currentMoves[i]]}");
                 }
-                bool x = int.TryParse(Console.ReadLine(), out input);
-                if (!x) Console.WriteLine("számot kérek");
 
-            } while (input < 1 || input > currentMoves.Count());
+                //input check
+                int.TryParse(Console.ReadLine(), out input);
+                if (input < 1 || input > currentAttackStaminaCost.Count())
+                {
+                    continue;
+                }
+                else
+                {
+                    chosenAttack = currentMoves[input - 1];
+                }
+
+                //stamina check
+                if (currentAttackStaminaCost[chosenAttack] <= current.Stamina)
+                {
+                    isValid = true;
+                }
+                else
+                {
+                    Console.WriteLine("Erre nincs elég staminád!");
+                }
+
+
+
+            } while (!isValid);
 
             return (input,currentMoves, currentAttackStaminaCost);
         }
+
+        // I don't have to explain this
         static void ShowStats(Player player1, Player player2)
         {
             Console.WriteLine($"1-es Játékos statisztikái: \n \n Neve:{player1.GetType().Name} \n HP:{player1.HP} \n Damage:{player1.Damage} \n Stamina:{player1.Stamina} \n");
             Console.WriteLine($"2-es Játékos statisztikái: \n \n Neve:{player2.GetType().Name}\n HP:{player2.HP} \n Damage:{player2.Damage} \n Stamina:{player2.Stamina} \n");
         }
         
-        static int NextPlayer()
+        // get's the winner player from the luck game!!!
+        static int NextPlayer(Player player1, Player player2)
         {
             Random random = new Random();
-            int GuessNumber = random.Next(0, 10);
+            int GuessNumber = random.Next(1, 11);
             Console.WriteLine("1. Játékos tippeljen 1-10 között!");
             int.TryParse(Console.ReadLine(), out int player1GuessNumber);
 
@@ -138,12 +167,16 @@ namespace FighterGame
 
             if (player1GuessNumber < player2GuessNumber)
             {
+                Console.Clear();
+                ShowStats(player1, player2);
                 Console.WriteLine("Az első játékos nyert! \n");
                 System.Threading.Thread.Sleep(500);
                 return 0;
             }
             else
             {
+                Console.Clear();
+                ShowStats(player1, player2);
                 Console.WriteLine("A második játékos nyert! \n");
                 System.Threading.Thread.Sleep(500);
                 return 1;

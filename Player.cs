@@ -17,16 +17,16 @@ namespace FighterGame
 
     }
 
-   public abstract class  Player
+    public abstract class Player
     {
-        
+
         private int hp;
         private int damage;
         private int stamina;
         private readonly int maxStamina;
         private readonly int maxHp;
         public abstract Dictionary<Attacks, int> attackStaminaCost();
-        public const double  baseAttackCost = 0.1;
+        private const double baseAttackCost = 0.25;
         public abstract List<Attacks> GetAvailableMoves();
 
         //get set
@@ -40,7 +40,10 @@ namespace FighterGame
             get { return damage; }
             protected set { damage = value; }
         }
+        public double BaseAttackCost{
 
+            get { return baseAttackCost; }
+            }
 
 
         public int HP
@@ -89,11 +92,14 @@ namespace FighterGame
         {
            
             player.TakeDamage(Damage);
-            Stamina -= (int)(MaxStamina * baseAttackCost);
+            Stamina -= (int)(MaxStamina * BaseAttackCost);
 
             
         }
-
+        public void SkipRound(int staminaRegen)
+        {
+            Stamina -= staminaRegen;
+        }
 
     }
 
@@ -119,7 +125,7 @@ namespace FighterGame
                 Console.WriteLine("Sikerült a heal");
 
                 HP += (int)(MaxHP * healPercent);
-                Stamina -= (int)(MaxStamina * 0.15);
+                Stamina -= (int)(MaxStamina * BaseAttackCost);
             }
 
         }
@@ -127,9 +133,9 @@ namespace FighterGame
         public override Dictionary<Attacks, int> attackStaminaCost()
         {
             Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
-            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Heal, (int)(MaxStamina * 0.2));
+            AttackStaminaCost.Add(Attacks.WaitRound, -(int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Heal, (int)(MaxStamina * BaseAttackCost));
             return AttackStaminaCost;
         }
         public override List<Attacks> GetAvailableMoves()
@@ -143,12 +149,13 @@ namespace FighterGame
    public class GlassCannon : Player
     {
         private readonly int critMultiplier = 2;
+        
         public override Dictionary<Attacks, int> attackStaminaCost()
         {
             Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
-            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Crit, (int)(MaxStamina * 0.17));
+            AttackStaminaCost.Add(Attacks.WaitRound, -(int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Crit, (int)(MaxStamina * BaseAttackCost * 1.2));
             return AttackStaminaCost;
         }
         public override List<Attacks> GetAvailableMoves()
@@ -169,7 +176,7 @@ namespace FighterGame
                 Console.WriteLine("Sikerült a támadás");
 
                 player.TakeDamage(Damage * critMultiplier);
-                Stamina -= (int)(MaxStamina * 0.15);
+                Stamina -= (int)(MaxStamina * BaseAttackCost * 1.2);
             }
 
         }
@@ -191,9 +198,9 @@ namespace FighterGame
         public override Dictionary<Attacks, int> attackStaminaCost()
         {
             Dictionary<Attacks, int> AttackStaminaCost = new Dictionary<Attacks, int>();
-            AttackStaminaCost.Add(Attacks.WaitRound, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * baseAttackCost));
-            AttackStaminaCost.Add(Attacks.Double, (int)(MaxStamina * baseAttackCost) * 2 );
+            AttackStaminaCost.Add(Attacks.WaitRound, -(int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Basic, (int)(MaxStamina * BaseAttackCost));
+            AttackStaminaCost.Add(Attacks.Double, (int)(MaxStamina * BaseAttackCost) * 2 );
             return AttackStaminaCost;
         }
         public override List<Attacks> GetAvailableMoves()
