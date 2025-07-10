@@ -41,6 +41,11 @@ namespace FighterGame
                       HandlePlayerMove(player2, player1);
                   }
 
+                  if (HandleGameOver(player1, player2))
+                {
+                    Console.WriteLine("\n Vége a játéknak!");
+                    Console.ReadKey();
+                }
                 //wait for a bit after the round
                 Console.WriteLine("Nyomj bármilyen gombot a folytatáshoz...");
                 Console.ReadKey();
@@ -50,6 +55,31 @@ namespace FighterGame
 
         }
 
+        static bool HandleGameOver(Player player1, Player player2)
+        {
+
+            if (player1.HP <= 0)
+            {
+                Console.WriteLine("\n 2. játékos nyert");
+               GameWinner winnerData =  checkGameWinner(player2,player1);
+                return true;
+            }
+            else if (player2.HP <= 0)
+            {
+                Console.WriteLine("\n 1. Játékos nyert");
+              GameWinner winnerData =  checkGameWinner(player1,player2);
+                return true;
+            }
+
+            return false;
+        }
+       static GameWinner checkGameWinner(Player winner, Player loser)
+        {
+
+           GameWinner gameData = new GameWinner (winner.GetType().Name.ToString(),loser.GetType().Name.ToString(), DateTime.Now );
+            return gameData;
+        }
+      
 
         static void HandlePlayerMove(Player current, Player target)
         {
@@ -110,7 +140,7 @@ namespace FighterGame
                 //write out the current player's moves
                 for (int i = 0; i < currentMoves.Count(); i++)
                 {
-                    Console.WriteLine($"{currentMoves[i]} Attack | Stamina Cost: {currentAttackStaminaCost[currentMoves[i]]}");
+                    Console.WriteLine($"{i + 1}: {currentMoves[i]} Attack | Stamina Cost: {currentAttackStaminaCost[currentMoves[i]]}");
                 }
 
                 //input check
@@ -152,19 +182,21 @@ namespace FighterGame
         static int NextPlayer(Player player1, Player player2)
         {
             Random random = new Random();
-            int GuessNumber = random.Next(1, 11);
+            int GuessNumber = random.Next(0, 11);
             Console.WriteLine("1. Játékos tippeljen 1-10 között!");
             int.TryParse(Console.ReadLine(), out int player1GuessNumber);
 
             Console.WriteLine("2. Játékos tippeljen 1-10 között!");
             int.TryParse(Console.ReadLine(), out int player2GuessNumber);
 
+            // gets the distance from the number zero!!
             player1GuessNumber -= GuessNumber;
             player1GuessNumber = Math.Abs(player1GuessNumber);
 
             player2GuessNumber -= GuessNumber;
             player2GuessNumber = Math.Abs(player2GuessNumber);
 
+            //checks which distance is closer to the number zero!!!
             if (player1GuessNumber < player2GuessNumber)
             {
                 Console.Clear();
